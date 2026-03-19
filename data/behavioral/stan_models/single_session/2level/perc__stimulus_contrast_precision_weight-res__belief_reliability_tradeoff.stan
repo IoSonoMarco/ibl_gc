@@ -187,23 +187,4 @@ generated quantities {
   }
 
   brier_score /= total_obs;
-
-  // Latent Trajectories
-  vector[N_obs] belief_reg;
-  vector[N_obs] sensory_reg;
-
-  real sensory_reliability;
-  real sensory_evidence;
-
-  for (n in 1:N_obs) {
-      sensory_reliability = contrast_to_sensory_reliability(
-        stimulus_contrast[n], 
-        contrast_slope,
-        contrast_midpoint
-      );
-      sensory_evidence = sensory_reliability * (2.0 * stimulus_side[n] - 1.0);
-
-      belief_reg[n] = beta_prior*x_2_expected_mean[n];
-      sensory_reg[n] = beta_sens*sensory_evidence;
-    }
 }
