@@ -1,8 +1,6 @@
 /output
 *.exe
 /logs
-data/behavioral/stan_models/*
-!data/behavioral/stan_models/*.stan
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
