@@ -126,16 +126,13 @@ parameters {
 transformed parameters {
   vector<upper=0>[N_sess] omega2_sess;
   vector<lower=0>[N_sess] zeta_sess;
-  vector<lower=0.5, upper=5>[N_sess] contrast_slope_sess;
-  vector<lower=0, upper=1>[N_sess] contrast_midpoint_sess;
-  vector<lower=0.001, upper=0.2>[N_sess] lapse_sess;
+  real<lower=0.5, upper=5> contrast_slope;
+  real<lower=0.001, upper=0.2> lapse;
 
   omega2_sess = -log1p_exp(mu_omega2 + sigma_omega2 * omega2_eta);
   zeta_sess = exp(mu_zeta + sigma_zeta * zeta_eta);
-  contrast_slope_sess = rep_vector(0.5 + (5 - 0.5) * inv_logit(contrast_slope_latent), N_sess); // contrast_slope in [0.5, 5]
-  contrast_midpoint_sess = rep_vector(contrast_midpoint, N_sess);
-  lapse_sess = rep_vector(0.001 + (0.2 - 0.001) * inv_logit(lapse_latent), N_sess); // lapse in [0.001, 0.2]
-
+  contrast_slope = 0.5 + (5 - 0.5) * inv_logit(contrast_slope_latent); // contrast_slope in [0.5, 5]
+  lapse = 0.001 + (0.2 - 0.001) * inv_logit(lapse_latent); // lapse in [0.001, 0.2]
 
   vector[N_obs] x_1_expected_mean;
   vector[N_obs] p_choice;
@@ -145,15 +142,15 @@ transformed parameters {
     stimulus_side, stimulus_contrast, 
     start_idx, end_idx,
     omega2_sess, 
-    contrast_slope_sess, 
-    contrast_midpoint_sess
+    rep_vector(contrast_slope, N_sess), 
+    rep_vector(contrast_midpoint, N_sess)
   );
 
   p_choice = response_model(
     x_1_expected_mean, 
     start_idx, end_idx,
     zeta_sess, 
-    lapse_sess
+    rep_vector(lapse, N_sess)
   );
 }
 

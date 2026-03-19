@@ -1,6 +1,7 @@
 import argparse
 import os
 from pathlib import Path
+import yaml
 
 import numpy as np
 import pandas as pd
@@ -77,7 +78,60 @@ def parse_args() -> argparse.Namespace:
         default=200,
         help="Number of warmup iterations per chain.",
     )
-    return parser.parse_args()
+
+    parser.add_argument(
+        "--config",
+        type=str,
+        default=None,
+        help="Path to YAML config file.",
+    )
+    parser.add_argument(
+        "--run-name",
+        type=str,
+        default=None,
+        help="Run name from config['runs'][].name.",
+    )
+    
+    parser.add_argument("--adapt-delta", type=float, default=0.90)
+    parser.add_argument("--max-treedepth", type=int, default=12)
+
+    args = parser.parse_args()
+
+    if args.config is not None:
+        if args.run_name is None:
+            raise ValueError("When using --config, you must also provide --run-name.")
+
+        with open(args.config, "r") as f:
+            cfg = yaml.safe_load(f)
+
+        defaults = cfg.get("defaults", {})
+        runs = cfg.get("runs", [])
+
+        if not runs:
+            raise ValueError("Config file contains no runs.")
+
+        matched_runs = [run for run in runs if run.get("name") == args.run_name]
+
+        if not matched_runs:
+            available = [run.get("name") for run in runs]
+            raise ValueError(
+                f"Run name '{args.run_name}' not found in config. "
+                f"Available runs: {available}"
+            )
+
+        if len(matched_runs) > 1:
+            raise ValueError(
+                f"Run name '{args.run_name}' is duplicated in config. "
+                "Run names must be unique."
+            )
+
+        run_cfg = matched_runs[0]
+        merged = {**defaults, **run_cfg}
+
+        for key, value in merged.items():
+            setattr(args, key.replace("-", "_"), value)
+
+    return args
 
 
 def build_model_and_paths(args: argparse.Namespace):
@@ -108,15 +162,20 @@ def build_model_and_paths(args: argparse.Namespace):
     return model, output_dir, name_suffix
 
 
-def sample_model(model: CmdStanModel, data: dict, args: argparse.Namespace):
+def sample_model(
+    model: CmdStanModel, 
+    data: dict, 
+    args: argparse.Namespace
+):
     return model.sample(
         data=data,
         chains=args.n_chains,
         parallel_chains=args.n_chains,
         iter_sampling=args.n_samples,
         iter_warmup=args.n_warmup,
+        adapt_delta=args.adapt_delta,
+        max_treedepth=args.max_treedepth
     )
-
 
 def run_single_session_fit(
     model: CmdStanModel, output_dir: Path, name_suffix: str, args: argparse.Namespace

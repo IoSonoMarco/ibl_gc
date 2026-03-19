@@ -160,7 +160,6 @@ transformed parameters {
   contrast_slope = 0.5 + (5 - 0.5) * inv_logit(contrast_slope_latent); // contrast_slope in [0.5, 5]
   lapse = 0.001 + (0.2 - 0.001) * inv_logit(lapse_latent); // lapse in [0.001, 0.2]
 
-
   vector[N_obs] x_2_expected_mean;
   vector[N_obs] p_choice;
 
