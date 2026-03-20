@@ -1,12 +1,6 @@
 /output
 *.exe
 /logs
-/data/behavioral/stan_models/full/2level/*
-!/data/behavioral/stan_models/full/2level/*.stan
-/data/behavioral/stan_models/single_session/2level/*
-!/data/behavioral/stan_models/single_session/2level/*.stan
-/data/behavioral/stan_models/single_subject/2level/*
-!/data/behavioral/stan_models/single_subject/2level/*.stan
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
